@@ -304,9 +304,10 @@ func (c *client) reportMetrics(ctx context.Context, event cloudevents.Event, res
 	}
 	tags := MetricTagFromContext(ctx)
 	reportArgs := &source.ReportArgs{
-		Namespace:     tags.Namespace,
-		EventSource:   event.Source(),
-		EventType:     event.Type(),
+		Namespace:   tags.Namespace,
+		EventSource: event.Source(),
+		EventType:   event.Type(),
+		EventScheme: event.Scheme(),
 		Name:          tags.Name,
 		ResourceGroup: tags.ResourceGroup,
 	}

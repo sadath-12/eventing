@@ -36,6 +36,8 @@ var specV03Attributes = map[string]struct{}{
 type EventContextV03 struct {
 	// Type - The type of the occurrence which has happened.
 	Type string `json:"type"`
+	// Scheme - The scheme of the occurrence which has happened.
+	Scheme string `json:"scheme"`
 	// Source - A URI describing the event producer.
 	Source types.URIRef `json:"source"`
 	// Subject - The subject of the event in the context of the event producer

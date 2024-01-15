@@ -62,6 +62,7 @@ var (
 type ReportArgs struct {
 	Namespace     string
 	EventType     string
+	EventScheme   string
 	EventSource   string
 	Name          string
 	ResourceGroup string
@@ -140,7 +141,8 @@ func register() {
 		responseCodeKey,
 		responseCodeClassKey,
 		responseError,
-		responseTimeout}
+		responseTimeout,
+	}
 
 	// Create view to see our measurements.
 	if err := view.Register(

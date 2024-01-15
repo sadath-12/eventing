@@ -44,6 +44,8 @@ type EventContextV1 struct {
 	// Type - The type of the occurrence which has happened.
 	// +required
 	Type string `json:"type"`
+	// Type - The scheme which has happened.
+	Scheme string `json:"scheme"`
 
 	// DataContentType - A MIME (RFC2046) string describing the media type of `data`.
 	// +optional

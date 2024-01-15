@@ -15,6 +15,8 @@ type EventContextReader interface {
 	GetSpecVersion() string
 	// GetType returns the CloudEvents type from the context.
 	GetType() string
+	// GetType returns the CloudEvents type from the context.
+	GetScheme() string
 	// GetSource returns the CloudEvents source from the context.
 	GetSource() string
 	// GetSubject returns the CloudEvents subject from the context.
@@ -78,6 +80,8 @@ type EventContextWriter interface {
 	SetDataContentType(string) error
 	// DeprecatedSetDataContentEncoding sets the data context encoding of the context.
 	DeprecatedSetDataContentEncoding(string) error
+	// SetScheme sets the scheme of the context.
+	SetScheme(string) error
 
 	// SetExtension sets the given interface onto the extension attributes
 	// determined by the provided name.

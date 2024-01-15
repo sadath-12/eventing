@@ -44,6 +44,14 @@ func (e *Event) SetType(t string) {
 	}
 }
 
+func (e *Event) SetScheme(t string) {
+	if err := e.Context.SetScheme(t); err != nil {
+		e.fieldError("scheme", err)
+	} else {
+		e.fieldOK("scheme")
+	}
+}
+
 // SetSource implements EventWriter.SetSource
 func (e *Event) SetSource(s string) {
 	if err := e.Context.SetSource(s); err != nil {

@@ -41,6 +41,10 @@ func (ec EventContextV1) GetDataMediaType() (string, error) {
 func (ec EventContextV1) GetType() string {
 	return ec.Type
 }
+// GetScheme implements EventContextReader.GetScheme
+func (ec EventContextV1) GetScheme() string {
+	return ec.Scheme
+}
 
 // GetSource implements EventContextReader.GetSource
 func (ec EventContextV1) GetSource() string {

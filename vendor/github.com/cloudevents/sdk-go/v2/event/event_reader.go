@@ -101,3 +101,12 @@ func (e Event) Extensions() map[string]interface{} {
 	}
 	return map[string]interface{}(nil)
 }
+
+// Extensions implements EventReader.Extensions
+func (e Event) Scheme() string {
+	if e.Context != nil {
+		return e.Context.GetScheme()
+	}
+	return ""
+}
+

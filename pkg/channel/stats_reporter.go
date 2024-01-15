@@ -54,13 +54,15 @@ var (
 	// - characters are printable US-ASCII
 	namespaceKey         = tag.MustNewKey(eventingmetrics.LabelNamespaceName)
 	eventTypeKey         = tag.MustNewKey(eventingmetrics.LabelEventType)
+	eventScheme          = tag.MustNewKey(eventingmetrics.LabelScheme)
 	responseCodeKey      = tag.MustNewKey(eventingmetrics.LabelResponseCode)
 	responseCodeClassKey = tag.MustNewKey(eventingmetrics.LabelResponseCodeClass)
 )
 
 type ReportArgs struct {
-	Ns        string
-	EventType string
+	Ns          string
+	EventType   string
+	EventScheme string
 }
 
 func init() {
@@ -72,8 +74,10 @@ type StatsReporter interface {
 	ReportEventDispatchTime(args *ReportArgs, responseCode int, d time.Duration) error
 }
 
-var _ StatsReporter = (*reporter)(nil)
-var emptyContext = context.Background()
+var (
+	_            StatsReporter = (*reporter)(nil)
+	emptyContext               = context.Background()
+)
 
 // Reporter holds cached metric objects to report channel metrics.
 type reporter struct {
@@ -93,6 +97,7 @@ func register() {
 	tagKeys := []tag.Key{
 		namespaceKey,
 		eventTypeKey,
+		eventScheme,
 		responseCodeKey,
 		responseCodeClassKey,
 		UniqueTagKey,
@@ -145,6 +150,7 @@ func (r *reporter) generateTag(args *ReportArgs, responseCode int) (context.Cont
 		emptyContext,
 		tag.Insert(namespaceKey, args.Ns),
 		tag.Insert(eventTypeKey, args.EventType),
+		tag.Insert(eventScheme, args.EventScheme),
 		tag.Insert(responseCodeKey, strconv.Itoa(responseCode)),
 		tag.Insert(responseCodeClassKey, metrics.ResponseCodeClass(responseCode)),
 		tag.Insert(ContainerTagKey, r.container),
