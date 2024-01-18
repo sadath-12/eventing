@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 
 	"go.uber.org/zap"
 
@@ -109,6 +110,8 @@ type EnvConfig struct {
 
 	// cached zap logger
 	logger *zap.SugaredLogger
+
+	externalKubeClient kubernetes.Clientset
 }
 
 // EnvConfigAccessor defines accessors for the minimal
@@ -212,6 +215,13 @@ func (e *EnvConfig) GetNamespace() string {
 
 func (e *EnvConfig) GetName() string {
 	return e.Name
+}
+
+func (e *EnvConfig) GetExternalKubeClient() kubernetes.Clientset {
+	if e.externalKubeClient != (kubernetes.Clientset{}) {
+		return e.externalKubeClient
+	}
+	return kubernetes.Clientset{}
 }
 
 func (e *EnvConfig) GetSinktimeout() int {

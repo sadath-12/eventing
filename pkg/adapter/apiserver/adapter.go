@@ -38,8 +38,7 @@ import (
 
 type envConfig struct {
 	adapter.EnvConfig
-	Name string `envconfig:"NAME" required:"true"`
-
+	Name       string `envconfig:"NAME" required:"true"`
 	ConfigJson string `envconfig:"K_SOURCE_CONFIG" required:"true"`
 }
 
@@ -49,10 +48,11 @@ type apiServerAdapter struct {
 
 	config Config
 
-	discover discovery.DiscoveryInterface
-	k8s      dynamic.Interface
-	source   string // TODO: who dis?
-	name     string // TODO: who dis?
+	discover    discovery.DiscoveryInterface
+	k8s         dynamic.Interface
+	source      string // TODO: who dis?
+	name        string // TODO: who dis?
+	externalK8s dynamic.Interface
 }
 
 func (a *apiServerAdapter) Start(ctx context.Context) error {
@@ -85,6 +85,8 @@ func (a *apiServerAdapter) start(ctx context.Context, stopCh <-chan struct{}) er
 
 	a.logger.Infof("STARTING -- %#v", a.config)
 
+	// here changes the k8s client to point to new cluster reading the secret
+
 	for _, configRes := range a.config.Resources {
 
 		resources, err := a.discover.ServerResourcesForGroupVersion(configRes.GVR.GroupVersion().String())
@@ -98,10 +100,18 @@ func (a *apiServerAdapter) start(ctx context.Context, stopCh <-chan struct{}) er
 				var resources []dynamic.ResourceInterface
 				if apires.Namespaced && !a.config.AllNamespaces {
 					for _, ns := range a.config.Namespaces {
-						resources = append(resources, a.k8s.Resource(configRes.GVR).Namespace(ns))
+						if a.externalK8s != nil {
+							resources = append(resources, a.externalK8s.Resource(configRes.GVR).Namespace(ns))
+						} else {
+							resources = append(resources, a.k8s.Resource(configRes.GVR).Namespace(ns))
+						}
 					}
 				} else {
-					resources = append(resources, a.k8s.Resource(configRes.GVR))
+					if a.externalK8s != nil {
+						resources = append(resources, a.externalK8s.Resource(configRes.GVR))
+					} else {
+						resources = append(resources, a.k8s.Resource(configRes.GVR))
+					}
 				}
 
 				for _, res := range resources {

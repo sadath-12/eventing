@@ -18,11 +18,16 @@ package apiserversource
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"sort"
 
 	rbacv1listers "k8s.io/client-go/listers/rbac/v1"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 
@@ -70,7 +75,8 @@ func newWarningSinkNotFound(sink *duckv1.Destination) pkgreconciler.Event {
 
 // Reconciler reconciles a ApiServerSource object
 type Reconciler struct {
-	kubeClientSet kubernetes.Interface
+	kubeClientSet         kubernetes.Interface
+	externalKubeClientSet kubernetes.Interface
 
 	receiveAdapterImage string
 
@@ -102,13 +108,28 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, source *v1.ApiServerSour
 		// no Namespace defined in dest.Ref, we will use the Namespace of the source
 		// as the Namespace of dest.Ref.
 		if dest.Ref.Namespace == "" {
-			//TODO how does this work with deprecated fields
+			// TODO how does this work with deprecated fields
 			dest.Ref.Namespace = source.GetNamespace()
 		}
 	}
 
 	// OIDC authentication
 	featureFlags := feature.FromContext(ctx)
+
+	externalKubeSecret := featureFlags.GetExternalKubeConfigIfAvailable()
+
+	if externalKubeSecret != "" {
+		externalConfig, err := readKubeconfigFromSecret(source.GetNamespace(), externalKubeSecret)
+		if err != nil {
+			return err
+		}
+		r.externalKubeClientSet, err = createKubeClient(externalConfig)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	if err := auth.SetupOIDCServiceAccount(ctx, featureFlags, r.serviceAccountLister, r.kubeClientSet, v1.SchemeGroupVersion.WithKind("ApiServerSource"), source.ObjectMeta, &source.Status, func(as *duckv1.AuthStatus) {
 		source.Status.Auth = as
 	}); err != nil {
@@ -118,7 +139,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, source *v1.ApiServerSour
 	if featureFlags.IsOIDCAuthentication() {
 		// Create the role
 		err := r.createOIDCRole(ctx, source)
-
 		if err != nil {
 			logging.FromContext(ctx).Errorw("Failed when creating the OIDC Role for ApiServerSource", zap.Error(err))
 			return err
@@ -333,7 +353,13 @@ func (r *Reconciler) runAccessCheck(ctx context.Context, src *v1.ApiServerSource
 					},
 				}
 
-				response, err := r.kubeClientSet.AuthorizationV1().SubjectAccessReviews().Create(ctx, sar, metav1.CreateOptions{})
+				var response *authorizationv1.SubjectAccessReview
+				if r.externalKubeClientSet != nil {
+					response, err = r.externalKubeClientSet.AuthorizationV1().SubjectAccessReviews().Create(ctx, sar, metav1.CreateOptions{})
+				} else {
+					response, err = r.kubeClientSet.AuthorizationV1().SubjectAccessReviews().Create(ctx, sar, metav1.CreateOptions{})
+				}
+
 				if err != nil {
 					return err
 				}
@@ -357,7 +383,6 @@ func (r *Reconciler) runAccessCheck(ctx context.Context, src *v1.ApiServerSource
 
 	src.Status.MarkNoSufficientPermissions(lastReason, "User %s cannot %s", user, missing)
 	return fmt.Errorf("insufficient permissions: User %s cannot %s", user, missing)
-
 }
 
 func (r *Reconciler) createCloudEventAttributes(src *v1.ApiServerSource) ([]duckv1.CloudEventAttributes, error) {
@@ -385,7 +410,6 @@ func (r *Reconciler) createOIDCRole(ctx context.Context, source *v1.ApiServerSou
 	roleName := resources.GetOIDCTokenRoleName(source.Name)
 
 	expected, err := resources.MakeOIDCRole(source)
-
 	if err != nil {
 		return fmt.Errorf("Cannot create OIDC role for ApiServerSource %s/%s: %w", source.GetName(), source.GetNamespace(), err)
 	}
@@ -417,7 +441,6 @@ func (r *Reconciler) createOIDCRole(ctx context.Context, source *v1.ApiServerSou
 	}
 
 	return nil
-
 }
 
 // createOIDCRoleBinding:  this function will call resources package to get the rolebinding object
@@ -466,4 +489,65 @@ func (r *Reconciler) propagateTrustBundles(ctx context.Context, source *v1.ApiSe
 		Kind:    "ApiServerSource",
 	}
 	return eventingtls.PropagateTrustBundles(ctx, r.kubeClientSet, r.trustBundleConfigMapLister, gvk, source)
+}
+
+func readKubeconfigFromSecret(namespace, secretName string) (*rest.Config, error) {
+	// Initialize Kubernetes client using in-cluster configuration
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get in-cluster config: %v", err)
+	}
+
+	// Create a Kubernetes client
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %v", err)
+	}
+
+	// Retrieve the secret data from the cluster
+	secret, err := clientset.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret: %v", err)
+	}
+
+	// Retrieve the kubeconfig data from the secret
+	kubeconfigData, ok := secret.Data["kubeconfig"]
+	if !ok {
+		return nil, fmt.Errorf("kubeconfig data not found in the secret")
+	}
+
+	// Decode the kubeconfig data
+	decodedKubeconfig, err := base64.StdEncoding.DecodeString(string(kubeconfigData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode kubeconfig data: %v", err)
+	}
+
+	// Write the kubeconfig data to a temporary file (optional)
+	tempKubeconfigFile, err := ioutil.TempFile("", "temp_kubeconfig_*.yaml")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temporary kubeconfig file: %v", err)
+	}
+	defer os.Remove(tempKubeconfigFile.Name())
+
+	if _, err := tempKubeconfigFile.Write(decodedKubeconfig); err != nil {
+		return nil, fmt.Errorf("failed to write to temporary kubeconfig file: %v", err)
+	}
+
+	// Use the temporary kubeconfig file to create a rest.Config
+	config, err = clientcmd.BuildConfigFromFlags("", tempKubeconfigFile.Name())
+	if err != nil {
+		return nil, fmt.Errorf("failed to build config from kubeconfig file: %v", err)
+	}
+
+	return config, nil
+}
+
+func createKubeClient(config *rest.Config) (*kubernetes.Clientset, error) {
+	// Create a Kubernetes clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes clientset: %v", err)
+	}
+
+	return clientset, nil
 }

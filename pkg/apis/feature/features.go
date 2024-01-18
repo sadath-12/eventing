@@ -102,6 +102,13 @@ func (e Flags) String() string {
 	return fmt.Sprintf("%+v", map[string]Flag(e))
 }
 
+func (e Flags) GetExternalKubeConfigIfAvailable() string {
+	if e != nil {
+		return string(e[externalKubeConfig])
+	}
+	return ""
+}
+
 // NewFlagsConfigFromMap creates a Flags from the supplied Map
 func NewFlagsConfigFromMap(data map[string]string) (Flags, error) {
 	flags := newDefaults()
@@ -122,6 +129,8 @@ func NewFlagsConfigFromMap(data map[string]string) (Flags, error) {
 			flags[sanitizedKey] = Permissive
 		} else if k == TransportEncryption && strings.EqualFold(v, string(Strict)) {
 			flags[sanitizedKey] = Strict
+		} else if k == externalKubeConfig {
+			flags[sanitizedKey] = Flag(v)
 		} else {
 			return flags, fmt.Errorf("cannot parse the feature flag '%s' = '%s'", k, v)
 		}

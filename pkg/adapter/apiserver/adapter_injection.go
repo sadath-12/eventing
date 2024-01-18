@@ -21,6 +21,8 @@ import (
 	"encoding/json"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/eventing/pkg/adapter/v2"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
@@ -66,14 +68,23 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		panic("failed to create config from json")
 	}
 
-	return &apiServerAdapter{
-		discover: kubeclient.Get(ctx).Discovery(),
-		k8s:      dynamicclient.Get(ctx),
-		ce:       ceClient,
-		source:   Get(ctx),
-		name:     env.Name,
-		config:   config,
+	discoveryServerClient := kubeclient.Get(ctx).Discovery()
 
-		logger: logger,
+	if env.GetExternalKubeClient() != (kubernetes.Clientset{}) {
+		// get the external client
+		// discoveryServerClient = env.GetExternalKubeClient().ge.Discovery()
+	}
+
+	// add the dynamic client from the external k8s
+
+	return &apiServerAdapter{
+		discover:    discoveryServerClient,
+		k8s:         dynamicclient.Get(ctx),
+		ce:          ceClient,
+		source:      Get(ctx),
+		name:        env.Name,
+		config:      config,
+		externalK8s: &dynamic.DynamicClient{},
+		logger:      logger,
 	}
 }
