@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 
 	"go.uber.org/zap"
@@ -112,6 +113,8 @@ type EnvConfig struct {
 	logger *zap.SugaredLogger
 
 	externalKubeClient kubernetes.Clientset
+
+	externalDynamic8s dynamic.Interface
 }
 
 // EnvConfigAccessor defines accessors for the minimal
@@ -222,6 +225,13 @@ func (e *EnvConfig) GetExternalKubeClient() kubernetes.Clientset {
 		return e.externalKubeClient
 	}
 	return kubernetes.Clientset{}
+}
+
+func (e *EnvConfig) GetExternalDynamicKubeClient() dynamic.Interface {
+	if e.externalDynamic8s != (&dynamic.DynamicClient{}) {
+		return e.externalDynamic8s
+	}
+	return &dynamic.DynamicClient{}
 }
 
 func (e *EnvConfig) GetSinktimeout() int {

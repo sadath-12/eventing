@@ -27,14 +27,7 @@ import (
 	logging "knative.dev/pkg/logging"
 )
 
-func GetDefaultKubeClient() {
-	injection.Default.RegisterClient(withClientFromConfig)
-	injection.Default.RegisterClientFetcher(func(ctx context.Context) interface{} {
-		return Get(ctx)
-	})
-}
-
-func RegisterExternalClient(){
+func init(){
 	injection.Default.RegisterClient(withClientFromConfig)
 	injection.Default.RegisterClientFetcher(func(ctx context.Context) interface{} {
 		return Get(ctx)
