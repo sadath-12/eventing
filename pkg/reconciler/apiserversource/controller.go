@@ -82,7 +82,7 @@ func NewController(
 			globalResync(nil)
 		}
 	})
-	featureStore.WatchConfigs(cmw)
+	featureStore.WatchConfigs(cmw) 
 
 	r := &Reconciler{
 		kubeClientSet:              kubeclient.Get(ctx),

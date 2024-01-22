@@ -167,7 +167,7 @@ func (h *Handler) getChannelAddress(broker *eventingv1.Broker) (*duckv1.Addressa
 	}
 
 	return addr, nil
-}
+} 
 
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Allow", "POST, OPTIONS")

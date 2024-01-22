@@ -139,7 +139,6 @@ func (r *Reconciler) reconcileBackingChannel(ctx context.Context, channelResourc
 			if err != nil {
 				logger.Errorw("Failed to convert to Channelable Object", zap.Any("backingChannel", backingChannelObjRef), zap.Any("createdChannel", created), zap.Error(err))
 				return nil, err
-
 			}
 			return channelable, nil
 		}

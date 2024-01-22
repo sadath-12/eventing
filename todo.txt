@@ -1,0 +1,35 @@
+understand the channels here 
+understand why there are serving of so many http servers --> I think because every service is served through http and connect with http 
+understand where unstructured resources are used and why  --> just used in testing to see the expected objects and for somewhere for unmarshalling process
+atleast see once what are the different components and names u see and try to explore them once lightly 
+understand what is the context of ingress here --> I think its for forwarding the event to the broker
+
+At minimum know what are the different different controllers and what they do
+
+channelInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
+what is enqueue here ??
+
+conclusions with the code:
+
+tracker there in reconcilers // understand how informers implemented correctly
+
+short notes to explore in the codebase: 
+
+Knative Eventing enables multiple resources to participate in the Event Mesh with a partial schema pattern called "duck typing". Duck typing allows multiple resource types to advertise common capabilities, such as "can receive events at a URL" or "can deliver events to a destination
+
+Source duck type and SinkBinding to support easily configuring applications to deliver events to a Broker
+
+Note that Broker matches the definition of an Addressable event destination, so it is possible to relay events from a Broker in one cluster to a Broker in another cluster
+
+Brokers provide a discoverable endpoint for event ingress ---> why endpoint for event ingress 
+
+understand source and sink here with the code 
+
+
+// patterns used here 
+
+from source -> sink 
+
+// channels and subscriptions 
+
+source -> channel(formatted to cloudEvents) -> subscriptions(multiple if we want) -> sink

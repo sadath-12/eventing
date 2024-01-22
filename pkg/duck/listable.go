@@ -36,6 +36,7 @@ import (
 
 // ListableTracker is a tracker capable of tracking any object that implements the apis.Listable interface.
 type ListableTracker interface {
+	//todo+ changes here ? if we do cross-namespace
 	// TrackInNamespace returns a function that can be used to watch arbitrary apis.Listable resources in the same
 	// namespace as obj. Any change will cause a callback for obj.
 	TrackInNamespace(ctx context.Context, obj metav1.Object) Track

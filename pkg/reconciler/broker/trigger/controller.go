@@ -47,6 +47,8 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 )
 
+//todo+ understand how this code comes into action
+
 // NewController initializes the controller and is called by the generated code
 // Registers event handlers to enqueue events
 func NewController(
@@ -139,6 +141,8 @@ func filterTriggers(lister eventinglisters.BrokerLister) func(interface{}) bool 
 	}
 }
 
+
+//+todo we will have to change things here
 // getTriggersForBroker makes sure the object passed in is a Broker, and gets all
 // the Triggers belonging to it. As there is no way to return failures in the
 // Informers EventHandler, errors are logged, and an empty array is returned in case

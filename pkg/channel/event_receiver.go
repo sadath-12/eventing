@@ -173,7 +173,7 @@ func (r *EventReceiver) Start(ctx context.Context) error {
 		return errors.New("timeout shutting down http bindings receiver")
 	}
 }
-
+ 
 func (r *EventReceiver) ServeHTTP(response nethttp.ResponseWriter, request *nethttp.Request) {
 	ctx := request.Context()
 

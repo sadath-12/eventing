@@ -217,7 +217,6 @@ O2dgzikq8iSy1BlRsVw=
 		src  *v1.ApiServerSource
 	}{
 		"TestMakeReceiveAdapter": {
-
 			want: want,
 			src:  src,
 		}, "TestMakeReceiveAdapterWithExtensionOverride": {
@@ -227,7 +226,6 @@ O2dgzikq8iSy1BlRsVw=
 	}
 	for n, tc := range testCases {
 		t.Run(n, func(t *testing.T) {
-
 			got, _ := MakeReceiveAdapter(&ReceiveAdapterArgs{
 				Image:  "test-image",
 				Source: tc.src,
@@ -244,7 +242,6 @@ O2dgzikq8iSy1BlRsVw=
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Error("unexpected deploy (-want, +got) =", diff)
 			}
-
 		})
 	}
 }
