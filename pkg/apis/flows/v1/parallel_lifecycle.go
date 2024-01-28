@@ -147,7 +147,7 @@ func (ps *ParallelStatus) PropagateChannelStatuses(ingressChannel *duckv1.Channe
 		Kind:       ingressChannel.Kind,
 		Name:       ingressChannel.Name,
 		Namespace:  ingressChannel.Namespace,
-	}
+	} 
 
 	address := ingressChannel.Status.AddressStatus.Address
 	if address != nil {

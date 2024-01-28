@@ -113,7 +113,7 @@ func (cs *ChannelStatus) PropagateStatuses(chs *eventingduck.ChannelableStatus) 
 	// TODO: Once you can get a Ready status from Channelable in a generic way, use it here.
 	readyCondition := chs.Status.GetCondition(apis.ConditionReady)
 	if readyCondition == nil {
-		cs.MarkBackingChannelNotConfigured()
+		cs.MarkBackingChannelNotConfigured() 
 	} else {
 		switch {
 		case readyCondition.Status == corev1.ConditionUnknown:

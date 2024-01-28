@@ -95,6 +95,8 @@ func getChannelableFromName(name string, ctx context.Context, t feature.T) *duck
 	channel.ResourceVersion = channel_impl.GVR().Version
 	channel.APIVersion = channel_impl.GVR().GroupVersion().String()
 
+	
+
 	return channel
 }
 

@@ -33,3 +33,8 @@ from source -> sink
 // channels and subscriptions 
 
 source -> channel(formatted to cloudEvents) -> subscriptions(multiple if we want) -> sink
+
+understand the channels : 
+how deploying
+
+understand the source -> channel -> sink workflow 
