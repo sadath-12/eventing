@@ -38,3 +38,6 @@ understand the channels :
 how deploying
 
 understand the source -> channel -> sink workflow 
+ya for example here -- when pingsource deployed this will run -- pkg/adapter/mtping/runner.go -- the client here will make post the event , -- here in servehttp the event is recieved -- pkg/channel/event_receiver.go and then channel dispatches to other subscribers uri here pkg/reconciler/inmemorychannel/dispatcher/inmemorychannel.go
+
+what is OIDC Auth

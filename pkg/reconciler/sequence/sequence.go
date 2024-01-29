@@ -97,7 +97,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, s *v1.Sequence) pkgrecon
 			Name:       ingressChannelName,
 			Namespace:  s.Namespace,
 		}
-
+		// create and deploy channel
 		channelable, err := r.reconcileChannel(ctx, channelResourceInterface, s, channelObjRef)
 		if err != nil {
 			err = fmt.Errorf("failed to reconcile channel %s at step %d: %w", ingressChannelName, i, err)
@@ -112,6 +112,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, s *v1.Sequence) pkgrecon
 
 	subs := make([]*messagingv1.Subscription, 0, len(s.Spec.Steps))
 	for i := 0; i < len(s.Spec.Steps); i++ {
+		// create the subscription for the step and deploy
 		sub, err := r.reconcileSubscription(ctx, i, s)
 		if err != nil {
 			err := fmt.Errorf("failed to reconcile subscription resource for step: %d : %s", i, err)
@@ -195,14 +196,14 @@ func (r *Reconciler) reconcileSubscription(ctx context.Context, step int, p *v1.
 		newSub, err := r.eventingClientSet.MessagingV1().Subscriptions(sub.Namespace).Create(ctx, sub, metav1.CreateOptions{})
 		if err != nil {
 			// TODO: Send events here, or elsewhere?
-			//r.Recorder.Eventf(p, corev1.EventTypeWarning, subscriptionCreateFailed, "Create Sequence's subscription failed: %v", err)
+			// r.Recorder.Eventf(p, corev1.EventTypeWarning, subscriptionCreateFailed, "Create Sequence's subscription failed: %v", err)
 			return nil, err
 		}
 		return newSub, nil
 	} else if err != nil {
 		logging.FromContext(ctx).Errorw("Failed to get subscription", zap.Error(err))
 		// TODO: Send events here, or elsewhere?
-		//r.Recorder.Eventf(p, corev1.EventTypeWarning, subscriptionCreateFailed, "Create Sequences's subscription failed: %v", err)
+		// r.Recorder.Eventf(p, corev1.EventTypeWarning, subscriptionCreateFailed, "Create Sequences's subscription failed: %v", err)
 		return nil, fmt.Errorf("failed to get subscription: %s", err)
 	} else if !equality.Semantic.DeepDerivative(expected.Spec, sub.Spec) {
 		// Given that spec.channel is immutable, we cannot just update the subscription. We delete
@@ -325,3 +326,8 @@ func (r *Reconciler) removeUnwantedSubscriptions(ctx context.Context, seq *v1.Se
 
 	return nil
 }
+
+// ok channels are created on each step
+// messagingv1.Subscription also in each step but they also link with channel under spec.channel and in spec.subscriber they have info of the service . so mostly through that they might be 
+// fetching the events and sending to channel then how channel will pass ?
+

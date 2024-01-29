@@ -38,7 +38,7 @@ func (c *PingSource) Validate(ctx context.Context) *apis.FieldError {
 
 func (cs *PingSourceSpec) Validate(ctx context.Context) *apis.FieldError {
 	var errs *apis.FieldError
-	schedule := cs.Schedule
+	schedule := cs.Schedule 
 
 	errs = validateDescriptor(schedule)
 

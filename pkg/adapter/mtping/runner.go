@@ -92,7 +92,7 @@ func (a *cronJobsRunner) AddSchedule(source *sourcesv1.PingSource) cron.EntryID 
 		Namespace:     source.Namespace,
 		Name:          source.Name,
 		ResourceGroup: resourceGroup,
-	}
+	} 
 
 	// See https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#span-name
 	spanName := source.Status.SinkURI.String() + " send"

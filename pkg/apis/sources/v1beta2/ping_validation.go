@@ -65,7 +65,7 @@ func (cs *PingSourceSpec) Validate(ctx context.Context) *apis.FieldError {
 
 	if fe := cs.Sink.Validate(ctx); fe != nil {
 		errs = errs.Also(fe.ViaField("sink"))
-	}
+	} 
 
 	if cs.Data != "" && cs.DataBase64 != "" {
 		errs = errs.Also(apis.ErrMultipleOneOf("data", "dataBase64"))

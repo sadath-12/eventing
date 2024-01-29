@@ -217,7 +217,7 @@ func (r *Reconciler) resolveSubscriber(ctx context.Context, subscription *v1.Sub
 		// This is done in the webhook too, but we need it here for backwards
 		// compatibility for subscriptions with subscriber.ref.namespace = "".
 		subscriber.SetDefaults(ctx)
-
+ 
 		// Resolve the group
 		if subscriber.Ref != nil && feature.FromContext(ctx).IsEnabled(feature.KReferenceGroup) {
 			var err error
@@ -500,7 +500,7 @@ func (r *Reconciler) updateChannelRemoveSubscription(channel *eventingduckv1.Cha
 				channel.Spec.Subscribers[i+1:]...)
 			return
 		}
-	}
+	} 
 }
 
 func (r *Reconciler) updateChannelAddSubscriptionSpec(channel *eventingduckv1.Channelable, sub *v1.Subscription) {

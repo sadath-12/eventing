@@ -284,7 +284,7 @@ func handleSubscribers(subscribers []eventingduckv1.SubscriberSpec, handle func(
 
 		if sub.ReplyURI != nil {
 			handle(duckv1.Addressable{
-				URL:     sub.ReplyURI,
+				URL:     sub.ReplyURI, 
 				CACerts: sub.ReplyCACerts,
 			})
 		}

@@ -111,7 +111,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, source *sourcesv1.PingSo
 		source.Status.Auth = as
 	}); err != nil {
 		return err
-	}
+	} 
 
 	sinkAddr, err := r.sinkResolver.AddressableFromDestinationV1(ctx, *dest, source)
 	if err != nil {

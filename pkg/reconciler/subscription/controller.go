@@ -58,7 +58,7 @@ func NewController(
 		}
 	})
 	featureStore.WatchConfigs(cmw)
-
+ 
 	r := &Reconciler{
 		dynamicClientSet:     dynamicclient.Get(ctx),
 		kubeclient:           kubeclient.Get(ctx),
