@@ -83,6 +83,14 @@ func Install(name string, opts ...manifest.CfgFn) feature.StepFn {
 		"name":       name,
 		"kind":       kind,
 		"apiVersion": apiVersion,
+		"status": map[string]interface{}{
+			"addresses": map[string]interface{}{
+				"url": "tcp://mychannelimpl-kn-channel.test-zswckqtv.svc.cluster.local",
+				"name":"tcp",
+			},
+		},
+
+
 	}
 	for _, fn := range opts {
 		fn(cfg)

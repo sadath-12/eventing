@@ -279,6 +279,7 @@ func (d *Dispatcher) executeRequest(ctx context.Context, target duckv1.Addressab
 		return ctx, nil, &dispatchInfo, fmt.Errorf("failed to create request: %w", err)
 	}
 
+
 	client, err := newClient(d.clientConfig, target)
 	if err != nil {
 		return ctx, nil, &dispatchInfo, fmt.Errorf("failed to create http client: %w", err)

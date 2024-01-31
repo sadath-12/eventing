@@ -400,7 +400,7 @@ func brokerRejectsMalformedCE(ctx context.Context, t feature.T) {
 		}
 	}
 }
-
+ 
 // source ---> [broker] ---[trigger]--> recorder
 func brokerEventVersionNotUpgraded(ctx context.Context, t feature.T) {
 	// brokerName := state.GetStringOrFail(ctx, t, "brokerName")

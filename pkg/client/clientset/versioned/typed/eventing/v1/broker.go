@@ -149,7 +149,7 @@ func (c *brokers) UpdateStatus(ctx context.Context, broker *v1.Broker, opts meta
 		Body(broker).
 		Do(ctx).
 		Into(result)
-	return
+	return 
 }
 
 // Delete takes name of the broker and deletes it. Returns an error if one occurs.

@@ -43,3 +43,7 @@ spec:
     backoffDelay: "{{ .delivery.backoffDelay }}"
     {{ end }}
   {{ end }}
+status:
+  addresses:
+  - url: tcp://mychannelimpl-kn-channel.test-zswckqtv.svc.cluster.local
+    name: tcp

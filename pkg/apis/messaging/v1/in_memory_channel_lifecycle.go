@@ -99,7 +99,7 @@ func (imcs *InMemoryChannelStatus) InitializeConditions() {
 	imcCondSet.Manage(imcs).InitializeConditions()
 }
 
-func (imcs *InMemoryChannelStatus) SetAddress(addr *v1.Addressable) {
+func (imcs *InMemoryChannelStatus) SetAddress(addr *v1.Addressable) { 
 	imcs.Address = addr
 	if addr != nil && addr.URL != nil {
 		imcs.Address.Name = pointer.String(addr.URL.Scheme)

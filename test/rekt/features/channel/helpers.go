@@ -25,10 +25,12 @@ import (
 	authv1 "k8s.io/api/authorization/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
 	"knative.dev/pkg/apis/duck"
 	apiextensionsclient "knative.dev/pkg/client/injection/apiextensions/client"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
@@ -50,6 +52,7 @@ func todo(ctx context.Context, t feature.T) {
 type EventingClient struct {
 	Channels    messagingclientsetv1.ChannelInterface
 	ChannelImpl dynamic.ResourceInterface
+	ri          rest.Interface
 }
 
 func Client(ctx context.Context) *EventingClient {
@@ -58,9 +61,12 @@ func Client(ctx context.Context) *EventingClient {
 	mc := eventingclient.Get(ctx).MessagingV1()
 	dc := dynamicclient.Get(ctx)
 
+	ri := eventingclient.Get(ctx).EventingV1().RESTClient()
+
 	return &EventingClient{
 		Channels:    mc.Channels(env.Namespace()),
 		ChannelImpl: dc.Resource(channel_impl.GVR()).Namespace(env.Namespace()),
+		ri:          ri,
 	}
 }
 
@@ -112,6 +118,44 @@ func patchChannelable(ctx context.Context, t feature.T, before, after *duckv1.Ch
 	_, err = Client(ctx).ChannelImpl.Patch(ctx, before.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
 		t.Fatal("Failed to patch the ChannelImpl", zap.Error(err), zap.Any("patch", patch))
+	}
+}
+
+func updateChannelableStatus(ctx context.Context, t feature.T, channel *duckv1.Channelable) {
+	channelUnstructured, err := runtime.DefaultUnstructuredConverter.ToUnstructured(channel)
+	if err != nil {
+		t.Fatal("Failed to convert Channelable to Unstructured", zap.Error(err))
+		return
+	}
+
+	_, err = Client(ctx).ChannelImpl.UpdateStatus(ctx, &unstructured.Unstructured{Object: channelUnstructured}, metav1.UpdateOptions{})
+	if err != nil {
+		t.Fatal("Failed to patch the ChannelImpl", zap.Error(err))
+	}
+}
+
+func updateChannelableSubStatus(ctx context.Context, t feature.T, channel *duckv1.Channelable) {
+	channelUnstructured, err := runtime.DefaultUnstructuredConverter.ToUnstructured(channel)
+	if err != nil {
+		t.Fatal("Failed to convert Channelable to Unstructured", zap.Error(err))
+		return
+	}
+
+	result := &unstructured.Unstructured{}
+
+	resourceName := strings.ToLower(channel.Kind) + "s"
+
+	err = Client(ctx).ri.Put().
+		Namespace(channel.Namespace).
+		Resource(resourceName).
+		Name(channel.GetName()).
+		SubResource("status").
+		Body(channelUnstructured).
+		Do(ctx).
+		Into(result)
+
+	if err != nil {
+		t.Fatal("Failed to patch the ChannelImpl", zap.Error(err))
 	}
 }
 

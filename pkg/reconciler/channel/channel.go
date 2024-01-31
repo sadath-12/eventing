@@ -83,7 +83,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, c *v1.Channel) pkgreconc
 	}
 
 	c.Status.Channel = &backingChannelObjRef
-	c.Status.PropagateStatuses(&backingChannel.Status)
+	c.Status.PropagateStatuses(&backingChannel.Status) 
 
 	// If a DeadLetterSink is defined in Spec.Delivery then whe resolve its URI and update the stauts
 	if c.Spec.Delivery != nil && c.Spec.Delivery.DeadLetterSink != nil {
@@ -139,7 +139,6 @@ func (r *Reconciler) reconcileBackingChannel(ctx context.Context, channelResourc
 			if err != nil {
 				logger.Errorw("Failed to convert to Channelable Object", zap.Any("backingChannel", backingChannelObjRef), zap.Any("createdChannel", created), zap.Error(err))
 				return nil, err
-
 			}
 			return channelable, nil
 		}
